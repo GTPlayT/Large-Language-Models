@@ -92,15 +92,6 @@ class LanguageModel (nn.Module):
             mask_tensor[0, 0, i, start:end] = 0
         return mask_tensor
     
-    def exclude_sliding_window_masking (self, max_seq_len, window_size=50, excluding_window=110):
-        mask_tensor = torch.full((1, 1, max_seq_len, max_seq_len), -torch.inf).to(torch.float32)
-        for i in range(max_seq_len):
-            start = max(0, i - window_size)
-            end = min(max_seq_len, i + window_size + 1)
-            mask_tensor[0, 0, i, start:end] = 0
-            mask_tensor[0, 0, i, 0:excluding_window] = 0
-        return mask_tensor
-    
     def encoder_masking (self, max_seq_len):
         mask_tensor = torch.ones(max_seq_len, max_seq_len)
         mask_tensor = torch.triu(mask_tensor, diagonal=1)

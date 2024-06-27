@@ -8,7 +8,6 @@ from llm.config import Config
 class Architecture(nn.Module):
     def __init__(self, config: Config):
         super().__init__()
-
         self.config = config
         
         self.layers = nn.ModuleList()
@@ -18,6 +17,7 @@ class Architecture(nn.Module):
     
     def forward(self, x, freqs_cis, kv_write_indices, kv_cache, mask):
         for i in range(len(self.layers)):
+            self.layers[i].to(self.config.device)
             x = self.layers[i](
                 x, 
                 freqs_cis,
@@ -25,5 +25,6 @@ class Architecture(nn.Module):
                 kv_cache[i],
                 mask
             )
+            self.layers[i].to(self.config.idle_device)
         x = self.norm(x)
         return x

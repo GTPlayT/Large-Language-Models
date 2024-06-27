@@ -12,9 +12,10 @@ class Config:
         self._head_dim: int = 256
         self._rms_norm_eps: float = 1e-6
         self._dtype_float: torch.dtype = torch.float
-        self._dtype_int: torch.dtype = torch.int8
+        self._dtype_int: torch.dtype = torch.int64
         self._quant: bool = False
         self._device: str = 'cpu'
+        self._idle_device: str = 'cpu'
         self._tokenizer_model: str = 'llm/models/tokenizer.model'
         self._llm_model: str = 'llm/models/gemma-2b-it.ckpt'
     
@@ -107,8 +108,8 @@ class Config:
 
     @dtype_int.setter
     def dtype_int(self, value):
-        if value not in [torch.float, torch.float16, torch.float32, torch.float64]:
-            raise ValueError("dtype must be one of torch.float16, torch.float32, or torch.float64")
+        if value not in [torch.int8, torch.int64]:
+            raise ValueError("dtype must be one of torch.int8 or torch.int64")
         self._dtype_int = value
 
     @property
@@ -128,6 +129,16 @@ class Config:
         if value not in ['cpu', 'cuda', 'xpu']:
             raise ValueError("device must be either 'cpu' or 'cuda'")
         self._device = value
+
+    @property
+    def idle_device(self):
+        return self._idle_device
+
+    @idle_device.setter
+    def idle_device(self, value):
+        if value not in ['cpu', 'cuda', 'xpu']:
+            raise ValueError("idle device must be either 'cpu' or 'cuda'")
+        self._idle_device = value
 
     @property
     def tokenizer_model(self):

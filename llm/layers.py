@@ -6,11 +6,28 @@ class Embedding(nn.Module):
         super().__init__()
         self.weight = nn.Parameter(
             torch.empty((num_embeddings, embedding_dim)),
-            requires_grad=False,
+            requires_grad=True,
         )
 
     def forward(self, x):
         output = nn.functional.embedding(x, self.weight)
+        return output
+    
+
+class QEmbedding(nn.Module):
+    def __init__(self, num_embeddings: int, embedding_dim: int):
+        super().__init__()
+        self.qweight = nn.Parameter(
+            torch.empty((num_embeddings, embedding_dim)),
+            requires_grad=True,
+        )
+
+        self.scales = nn.Parameter(
+            torch.Tensor(num_embeddings)
+        )
+
+    def forward(self, x):
+        output = nn.functional.embedding(x, self.qweight)
         return output
     
 class Linear(nn.Module):
@@ -18,7 +35,7 @@ class Linear(nn.Module):
         super().__init__()
         self.weight = nn.Parameter(
             torch.empty((out_features, in_features)),
-            requires_grad=False
+            requires_grad=True
         )
     
     def forward(self, x):
@@ -42,7 +59,7 @@ class Normalization(nn.Module):
             output += x
         return output
     
-class MultiLayerProtectron(nn.Module):
+class MultiLayerPerceptron(nn.Module):
     def __init__(self, hidden_size, intermediate_size):
         super().__init__()
 

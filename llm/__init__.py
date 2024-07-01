@@ -5,7 +5,10 @@ from llm.config import Config
 from llm.tokenizer import Tokenizer
 from llm.layers import Embedding
 from llm.architecture import Architecture
+<<<<<<< HEAD
 from llm.focal import FocalLoss
+=======
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
 from llm.misc import compute_freqs_cis
 
 
@@ -56,7 +59,11 @@ class LanguageModel (nn.Module):
         self.to(self.config.device)
 
 
+<<<<<<< HEAD
     def forward_aux(self, input_tokens, input_pos, kv_cache, mask, output_pos):
+=======
+    def forward(self, input_tokens, input_pos, kv_cache, mask, output_pos):
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
         freqs_cis = self.freqs_cis.index_select(0, input_pos)
         x = self.embedder(input_tokens) * (self.config.hidden_size ** 0.5)
         x = self.model (
@@ -67,9 +74,14 @@ class LanguageModel (nn.Module):
             mask
         )
         x = x.index_select(1,  output_pos).squeeze(dim=1)
+<<<<<<< HEAD
         x = x @ self.embedder.weight.t()
         x = nn.functional.softmax(x, dim=-1)
         return (torch.argmax(x, dim=-1).squeeze(dim=-1), x)
+=======
+        logits = x @ self.embedder.weight.t()
+        return torch.argmax(logits, dim=-1).squeeze(dim=-1)
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
     
     def create_KV_caches(self, batch_size, max_seq_len):
         kv_caches = []
@@ -102,7 +114,11 @@ class LanguageModel (nn.Module):
         return mask_tensor
 
     @torch.no_grad()
+<<<<<<< HEAD
     def forward(self, prompts, output_len=100):
+=======
+    def generate(self, prompts, output_len=100):
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
         # This part checks if the prompts input is a list or a string;
         # if string, it converts the to a list of reviews
         is_str_prompt = isinstance(prompts, str)
@@ -176,7 +192,11 @@ class LanguageModel (nn.Module):
         # This is where we will be generating prompts.
         # We are going to be iterating from how big the user wants the prompts to be.
         for i in range(max_seq_len - min_prompt_len):
+<<<<<<< HEAD
             next_token_id, _ = self.forward_aux(
+=======
+            next_token_id = self(
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
                 input_token_ids_tensor,
                 input_positions_tensor,
                 kv_caches,
@@ -237,6 +257,16 @@ class LanguageModel (nn.Module):
 
     def train_model_aux(self, prompts, targets, criteria, optimizer):
         self.train()
+<<<<<<< HEAD
+=======
+        is_str_prompt = isinstance(prompts, str)
+        if is_str_prompt:
+            prompts = [prompts]
+
+        is_str_target = isinstance(targets, str)
+        if is_str_target:
+            targets = [targets]
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
 
         batch_size = len(prompts)
 
@@ -290,17 +320,25 @@ class LanguageModel (nn.Module):
             #     target_tokens = torch.tensor([targets_[i] for targets_ in targets_tokens])
 
             if batch_size == 1:
+<<<<<<< HEAD
                 target_tokens = torch.tensor(targets_tokens[0][i], dtype=torch.long, device=self.config.device, requires_grad=False)  # Ensure the target is a long tensor
+=======
+                target_tokens = torch.tensor([targets_tokens[0][i]], dtype=torch.long).to(self.config.device)  # Ensure the target is a long tensor
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
             else:
                 target_tokens = torch.tensor([targets_[i] for targets_ in targets_tokens], dtype=torch.long).to(self.config.device)
 
 
+<<<<<<< HEAD
 
             # input_token_ids_tensor = input_token_ids_tensor.clone().detach().float().requires_grad_(True)
             # output = input_token_ids_tensor * 2
             # output.sum().backward()
 
             next_token_id, logits = self.forward_aux(
+=======
+            next_token_id = self(
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
                 input_token_ids_tensor,
                 input_positions_tensor,
                 kv_caches,
@@ -308,6 +346,7 @@ class LanguageModel (nn.Module):
                 output_positions_tensor,
             )
 
+<<<<<<< HEAD
             b_size, vocab = logits.shape
 
             target = torch.zeros((b_size, vocab))
@@ -328,6 +367,17 @@ class LanguageModel (nn.Module):
                 # except:
                 #     print(next_token_id, target_tokens)
                 # optimizer.step()
+=======
+            if next_token_id.dim() == 0:
+                loss = nn.functional.cross_entropy(next_token_id.view(1, 1).to(torch.float), target_tokens.view(1, 1).to(torch.float))
+                # loss = criteria(next_token_id.view(1, 1).float(), target_tokens.view(1, 1).float())
+                optimizer.zero_grad()
+                try:
+                    loss.backward()
+                except:
+                    print("Faces an error over here!")
+                optimizer.step()
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
             else:
                 loss = criteria(next_token_id.view(-1, 1).float(), target_tokens.view(-1, 1).float())
                 optimizer.zero_grad()
@@ -364,6 +414,7 @@ class LanguageModel (nn.Module):
         for param in self.parameters():
             param.requires_grad = True
 
+<<<<<<< HEAD
         is_str_prompt = isinstance(prompts, str)
         if is_str_prompt:
             prompts = [prompts]
@@ -372,6 +423,8 @@ class LanguageModel (nn.Module):
         if is_str_target:
             targets = [targets]
 
+=======
+>>>>>>> 37537c3beb5c0481101a0822146e58c48db064b6
         self.train_model_aux(prompts, targets, criteria, optimizer)
 
 
